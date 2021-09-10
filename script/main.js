@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const formAnswers = document.querySelector('#formAnswers')
   const nextButton = document.querySelector('#next');
   const prevButton = document.querySelector('#prev');
+  const sendButton = document.querySelector('#send')
 
   const questions = [{
       question: "Какого цвета бургер?",
@@ -78,6 +79,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   ];
 
+
+
   // questions.answers.forEach((item, i, arr) => {
   // });
 
@@ -88,14 +91,18 @@ document.addEventListener('DOMContentLoaded', function() {
   closeModal.addEventListener('click', () => {
     modalBlock.classList.remove('d-block')
   })
+
+  // функция запуска тестирования
   const playTest = () => {
+
+    const finalAnswers = [];
     let numberQuestion = 0;
     const renderAnswers = (index) => {
       questions[index].answers.forEach((answer) => {
         const answerItem = document.createElement('div')
-        answerItem.classList.add('answers-item', 'd-flex', 'flex-column')
+        answerItem.classList.add('answers-item', 'd-flex', 'justify-content-center')
         answerItem.innerHTML = `
-      <input type="${questions[index].type}" id="${answer.title}" name="answer" class="d-none">
+      <input type="${questions[index].type}" id="${answer.title}" name="answer" class="d-none" value="${answer.title}">
       <label for="${answer.title}" class="d-flex flex-column justify-content-between">
         <img class="answerImg" src="${answer.url}">
         <span>${answer.title}</span>
@@ -106,21 +113,74 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     const renderQuestions = (indexQuestion) => {
       formAnswers.innerHTML = '';
-      questionTitle.textContent = `${questions[indexQuestion].question}`;
-      // formAnswers.innerHTML = `
-      // <div class="answers-item d-flex flex-column">
-      //   <input type="radio" id="answerItem1" name="answer" class="d-none">
-      //   <label for="answerItem1" class="d-flex flex-column justify-content-between">
-      //     <img class="answerImg" src="${questions.answers[0].url}">
-      //     <span>${questions.answers[0].title}</span>
-      //   </label>
-      // </div>
-      // `
-      renderAnswers(indexQuestion);
+      if (numberQuestion >= 0 && numberQuestion <= questions.length - 1) {
+        questionTitle.textContent = `${questions[indexQuestion].question}`;
+        // formAnswers.innerHTML = `
+        // <div class="answers-item d-flex flex-column">
+        //   <input type="radio" id="answerItem1" name="answer" class="d-none">
+        //   <label for="answerItem1" class="d-flex flex-column justify-content-between">
+        //     <img class="answerImg" src="${questions.answers[0].url}">
+        //     <span>${questions.answers[0].title}</span>
+        //   </label>
+        // </div>
+        // `
+        renderAnswers(indexQuestion);
+        nextButton.classList.remove('d-none')
+        prevButton.classList.remove('d-none')
+        sendButton.classList.add('d-none')
+
+      }
+      if (numberQuestion === 0) {
+        prevButton.classList.add('d-none')
+      }
+      // if (numberQuestion === questions.length - 1) {
+      //   nextButton.classList.add('d-none')
+      //
+      // }
+      if (numberQuestion === questions.length) {
+        nextButton.classList.add('d-none')
+        prevButton.classList.add('d-none')
+        sendButton.classList.remove('d-none')
+        // formAnswers.textContent = `Спасибо!`;
+        formAnswers.innerHTML = `
+        <div class="form-group">
+          <label for="numberPhone">Enter your phone</label>
+          <input type="phone" class="form-control" id='numberPhone'>
+        </div>
+        `;
+
+      }
+      if (numberQuestion === questions.length + 1) {
+        formAnswers.textContent = `Спасибо за пройденный тест!`
+        setTimeout(() => {
+          modalBlock.classList.remove('d-block')
+        }, 2000)
+      }
     }
     renderQuestions(numberQuestion);
 
+    const checkAnswer = () => {
+      const obj = {};
+      const inputs = [...formAnswers.elements].filter((input) => input.checked || input.id === 'numberPhone');
+
+      // console.log(inputs);
+      inputs.forEach((input, index) => {
+        if (numberQuestion >= 0 && numberQuestion <= questions.length - 1) {
+          obj[`${index}_${questions[numberQuestion].question}`] = input.value;
+        }
+        if (numberQuestion === questions.length) {
+          obj[`Номер телефона`] = input.value;
+
+        }
+      });
+      // console.log(obj);
+      finalAnswers.push(obj)
+      console.log(finalAnswers);
+
+    }
+
     nextButton.onclick = () => {
+      checkAnswer();
       numberQuestion++;
       renderQuestions(numberQuestion);
     }
@@ -128,7 +188,12 @@ document.addEventListener('DOMContentLoaded', function() {
       numberQuestion--;
       renderQuestions(numberQuestion);
     }
-
+    sendButton.onclick = () => {
+      checkAnswer();
+      numberQuestion++;
+      renderQuestions(numberQuestion);
+      console.log(finalAnswers);
+    }
   }
 
 })
